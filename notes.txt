@@ -1,0 +1,5 @@
+BIOS INTERRUPT CODES (int):
+    VIDEO   0x10:
+        TTY_OUTPUT          AH=0x0E, AL={character to print}
+        CURSOR_MOVEMENT     AH=0x02, DH={Y axis}, DL= {X axis}
+
