@@ -16,12 +16,11 @@ org 0x7C00
         inc dh
         mov dl, 0
         int 0x10            ; move cusror down and left
-
 %endmacro
 
 main:
     mov ax, 0x03       
-    int 0x10                ; clear the screen by refreshing  video mode
+    int 0x10                ; clear the screen by refreshing video mode
  
     PRINTS s1
     PRINTS s2
