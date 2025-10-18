@@ -4,47 +4,73 @@ org 0x7C00
 %define VIDEO        0x10
 %define KEYBOARD     0x16
 
-%macro PRINTS 1
-    mov si, %1
+%macro PRINTB 2
+    mov SI, %1
     %%loop:
         lodsb            
-        or al, al          
+        or AL, AL          
         jz %%done
-        mov ah, 0x0E 
+        mov AH, 0x0E
         int VIDEO
         jmp %%loop
     %%done:
-        mov ah, 0x02
-        inc dh
-        mov dl, 0
-        int VIDEO            ; move cusror down and left
+        %if %2 == 1
+            mov AH, 0x02
+            inc DH
+            mov DL, 0
+            int VIDEO 
+        %endif
 %endmacro
 
-%macro SCANS 0
+%macro PRINTS 1 
     %%loop:
-        mov ah, 0x00
-        int 0x16
-        cmp al, 0x0D
+        pop AX              
+        mov AH, 0x0E
+        int 0x10
+        cmp SP, 0x7C00
+        jne %%loop
+        %if %1 == 1
+            mov AH, 0x02
+            inc DH
+            mov DL, 0
+            int VIDEO 
+        %endif
+%endmacro
+
+%macro SCAN 0
+    %%loop:
+        mov AH, 0x00
+        int KEYBOARD
+        cmp AL, 0x0D
         jz %%done
-        mov ah, 0x0E
+        push AX
+        mov AH, 0x0E
         int VIDEO
         jmp %%loop
     %%done:
-        mov ah, 0x02
-        inc dh
-        mov dl, 0
+        mov AH, 0x02
+        inc DH
+        mov DL, 0
         int VIDEO
 %endmacro
 
 main:
-    mov ax, 0x03       
+    mov SP, 0x7C00
+    mov AX, 0x03       
     int VIDEO                ; clear the screen by refreshing video mode
-    SCANS
-    PRINTS ok
+    .loop:
+        PRINTB ask, 1
+        SCAN
+        PRINTB welcome, 0
+        PRINTS 0
+        PRINTB exmark, 1
+        jmp .loop
     
-    hlt   
+       
 
-ok: db "Ok."
+ask: db "Enter your name: ", 0
+welcome: db "HELLO, ", 0
+exmark: db "!", 0
 
 times 510 - ($-$$) db 0
 dw 0xAA55
